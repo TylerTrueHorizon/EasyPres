@@ -17,7 +17,7 @@ EasyPres is just that: a self-hosted presentation agent that generates real-time
 - **Configurable slide count** -- request an exact number of slides or let the agent decide
 - **REST API** -- a single `POST /generate` endpoint that returns a downloadable `.pptx` binary
 - **Webhook events** -- stream raw agent loop events (tool calls, reasoning) to any URL in real time
-- **Model-agnostic** -- built on the OpenAI Agents SDK, defaults to GPT-4o, but you can swap in any supported model
+- **Model-agnostic** -- built on the OpenAI Agents SDK, defaults to `gpt-4o-mini`, but configurable via the `EASYPRES_MODEL` env var to use any supported model or provider
 - **Fully open source** -- no vendor lock-in, no subscriptions, run it anywhere
 
 ## Project Structure
@@ -110,11 +110,23 @@ If no `webhook_url` is provided, events are silently discarded.
 
 ## Configuration
 
-| Environment Variable | Description |
-|---|---|
-| `OPENAI_API_KEY` | Your OpenAI API key (required) |
+| Environment Variable | Description | Default |
+|---|---|---|
+| `OPENAI_API_KEY` | API key for your LLM provider (required) | — |
+| `OPENAI_BASE_URL` | Base URL override for OpenAI-compatible providers | `https://api.openai.com/v1` |
+| `EASYPRES_MODEL` | Model identifier to use for generation | `gpt-4o-mini` |
 
-To change the model, set the `model` parameter on the `Agent` definition in `src/agents/presentation_agent.py`.
+### Using a custom provider
+
+EasyPres works with any OpenAI-compatible API. To use a provider like [OpenRouter](https://openrouter.ai), [Together](https://together.ai), or a local model server, set the base URL and model:
+
+```bash
+export OPENAI_API_KEY=sk-or-...
+export OPENAI_BASE_URL=https://openrouter.ai/api/v1
+export EASYPRES_MODEL=anthropic/claude-sonnet-4
+```
+
+> **Note:** Some providers do not support the OpenAI Responses API and only offer the Chat Completions API. If you encounter compatibility errors, you may need to wrap your model with `OpenAIChatCompletionsModel` from the Agents SDK. See the [OpenAI Agents SDK docs](https://openai.github.io/openai-agents-python/) for details.
 
 ## License
 

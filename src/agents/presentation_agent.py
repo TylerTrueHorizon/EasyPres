@@ -20,6 +20,8 @@ from numeric_highlight_slide import create_numeric_highlight_slide
 from split_bullet_slide import create_split_bullet_slide
 from table_slide import create_table_slide
 
+DEFAULT_MODEL = os.environ.get("EASYPRES_MODEL", "gpt-4o-mini")
+
 
 @dataclass
 class PresentationContext:
@@ -254,7 +256,7 @@ or add_bar_chart_slide_multi (multiple series)
 presentation_agent = Agent[PresentationContext](
     name="Presentation Builder",
     instructions=AGENT_INSTRUCTIONS,
-    model = "gpt-4o-mini",
+    model=DEFAULT_MODEL,
     tools=[
         add_intro_slide,
         add_bar_chart_slide_single,
@@ -369,6 +371,7 @@ async def build_presentation(
     agent = Agent[PresentationContext](
         name=presentation_agent.name,
         instructions=instructions,
+        model=DEFAULT_MODEL,
         tools=list(presentation_agent.tools),
     )
 
