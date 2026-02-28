@@ -372,6 +372,7 @@ async def build_presentation(
         name=presentation_agent.name,
         instructions=instructions,
         model=DEFAULT_MODEL,
+        parallel_tool_calls=False,
         tools=list(presentation_agent.tools),
     )
 
