@@ -55,6 +55,15 @@ pip install -r requirements.txt
 export OPENAI_API_KEY=sk-...
 ```
 
+### Docker
+
+```bash
+docker build -t easypres .
+docker run -p 8000:8000 -e OPENAI_API_KEY=sk-... easypres
+```
+
+You can also pass `OPENAI_BASE_URL` and `EASYPRES_MODEL` as additional `-e` flags to configure the provider and model.
+
 ### Run the API server
 
 ```bash
