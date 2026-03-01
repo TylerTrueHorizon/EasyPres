@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "agents"))
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from typing import Optional
+from typing import Any, Optional
 
 from presentation_agent import build_presentation
 
@@ -20,6 +20,7 @@ class GenerateRequest(BaseModel):
     num_slides: Optional[int] = None
     webhook_url: Optional[str] = None
     webhook_headers: Optional[dict[str, str]] = None
+    passthrough_data: Optional[dict[str, Any]] = None
 
 
 PPTX_MEDIA_TYPE = (
@@ -40,6 +41,7 @@ async def generate(req: GenerateRequest):
             num_slides=req.num_slides,
             webhook_url=req.webhook_url,
             webhook_headers=req.webhook_headers,
+            passthrough_data=req.passthrough_data,
         )
 
         with open(tmp_path, "rb") as f:

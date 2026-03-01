@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import logging
 from dataclasses import dataclass, field
-from typing import Optional, Callable
+from typing import Any, Optional, Callable
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "slides"))
 
@@ -298,12 +298,15 @@ def _serialize_event(event: StreamEvent) -> dict:
 def create_webhook_event_handler(
     webhook_url: Optional[str] = None,
     webhook_headers: Optional[dict[str, str]] = None,
+    passthrough_data: Optional[dict[str, Any]] = None,
 ) -> Callable[[StreamEvent], None]:
     """Factory that returns a StreamEvent callback.
 
     When *webhook_url* is ``None`` the returned callback is a no-op.
-    Otherwise every event is POSTed as JSON to the URL (fire-and-forget;
-    errors are logged but never raised).
+    Otherwise every event except ``raw_response_event`` is POSTed as JSON
+    to the URL (fire-and-forget; errors are logged but never raised).
+    If *passthrough_data* is provided, it is included in each POST body
+    under the key ``passthrough_data`` (must be JSON-serializable).
     """
     if webhook_url is None:
         def _noop(event: StreamEvent) -> None:
@@ -313,7 +316,11 @@ def create_webhook_event_handler(
     import httpx
 
     async def _webhook_handler(event: StreamEvent) -> None:
+        if event.type == "raw_response_event":
+            return
         payload = _serialize_event(event)
+        if passthrough_data is not None:
+            payload["passthrough_data"] = passthrough_data
         try:
             async with httpx.AsyncClient() as client:
                 await client.post(
@@ -339,6 +346,7 @@ async def build_presentation(
     on_event: Optional[Callable[[StreamEvent], None]] = None,
     webhook_url: Optional[str] = None,
     webhook_headers: Optional[dict[str, str]] = None,
+    passthrough_data: Optional[dict[str, Any]] = None,
 ) -> str:
     """Build a presentation from content using the AI agent.
 
@@ -354,13 +362,18 @@ async def build_presentation(
         webhook_url: URL to POST each raw event to as JSON.  Ignored when
                      *on_event* is supplied.
         webhook_headers: Extra HTTP headers sent with every webhook POST.
+        passthrough_data: Optional dict included in each webhook POST under
+                         the key ``passthrough_data`` (JSON-serializable).
+                         Ignored when *on_event* is supplied.
 
     Returns the path to the saved .pptx file.
     """
     if on_event is not None:
         handler = on_event
     else:
-        handler = create_webhook_event_handler(webhook_url, webhook_headers)
+        handler = create_webhook_event_handler(
+            webhook_url, webhook_headers, passthrough_data=passthrough_data
+        )
 
     instructions = AGENT_INSTRUCTIONS
     if num_slides is not None:
