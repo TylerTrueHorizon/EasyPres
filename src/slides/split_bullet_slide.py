@@ -104,13 +104,12 @@ def create_split_bullet_slide(
     line_height = Pt(0.5)
     line_color = RGBColor(200, 200, 200)
 
-    for idx, sec in enumerate(sections):
-        sec_top = block_top + section_height * idx
-
-        # Horizontal separator line above each section (including the first)
+    # Separator lines between sections only (not above first / below last)
+    for idx in range(1, n):
+        line_top = block_top + section_height * idx
         line = slide.shapes.add_shape(
             MSO_SHAPE.RECTANGLE,
-            int(right_left), int(sec_top),
+            int(right_left), int(line_top),
             int(usable_right_width), int(line_height),
         )
         line.fill.solid()
@@ -118,50 +117,34 @@ def create_split_bullet_slide(
         line.line.fill.background()
         line.shadow.inherit = False
 
-        # Section title
-        sec_title_top = sec_top + Pt(8)
-        sec_title_height = Inches(0.4)
+    # Section content (single vertically-centered textbox per section)
+    for idx, sec in enumerate(sections):
+        sec_top = block_top + section_height * idx
 
-        sec_title_box = slide.shapes.add_textbox(
-            right_left, sec_title_top, usable_right_width, sec_title_height,
+        box = slide.shapes.add_textbox(
+            right_left, sec_top, usable_right_width, int(section_height),
         )
-        stf = sec_title_box.text_frame
-        stf.word_wrap = True
-        stf.text = sec["title"]
-        stp = stf.paragraphs[0]
-        stp.alignment = PP_ALIGN.LEFT
-        stp.font.name = "Albert Sans"
-        stp.font.size = Pt(15)
-        stp.font.bold = True
-        stp.font.color.rgb = theme['NEUTRAL_DARK']
+        tf = box.text_frame
+        tf.word_wrap = True
+        tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        tf.margin_top = Inches(0.08)
+        tf.margin_bottom = Inches(0.08)
 
-        # Section descriptor
-        sec_desc_top = sec_title_top + sec_title_height
-        sec_desc_height = section_height - sec_title_height - Pt(16)
+        title_para = tf.paragraphs[0]
+        title_para.text = sec["title"]
+        title_para.alignment = PP_ALIGN.LEFT
+        title_para.font.name = "Albert Sans"
+        title_para.font.size = Pt(15)
+        title_para.font.bold = True
+        title_para.font.color.rgb = theme['NEUTRAL_DARK']
 
-        sec_desc_box = slide.shapes.add_textbox(
-            right_left, sec_desc_top, usable_right_width, sec_desc_height,
-        )
-        sdf = sec_desc_box.text_frame
-        sdf.word_wrap = True
-        sdf.text = sec["descriptor"]
-        sdp = sdf.paragraphs[0]
-        sdp.alignment = PP_ALIGN.LEFT
-        sdp.font.name = "Albert Sans"
-        sdp.font.size = Pt(11)
-        sdp.font.color.rgb = desc_color
-
-    # Bottom separator line after the last section
-    bottom_line_top = block_top + total_block_height
-    bottom_line = slide.shapes.add_shape(
-        MSO_SHAPE.RECTANGLE,
-        int(right_left), int(bottom_line_top),
-        int(usable_right_width), int(line_height),
-    )
-    bottom_line.fill.solid()
-    bottom_line.fill.fore_color.rgb = line_color
-    bottom_line.line.fill.background()
-    bottom_line.shadow.inherit = False
+        desc_para = tf.add_paragraph()
+        desc_para.text = sec["descriptor"]
+        desc_para.alignment = PP_ALIGN.LEFT
+        desc_para.font.name = "Albert Sans"
+        desc_para.font.size = Pt(11)
+        desc_para.font.color.rgb = desc_color
+        desc_para.space_before = Pt(4)
 
     return slide
 

@@ -382,6 +382,7 @@ async def build_presentation(
         agent,
         input=content,
         context=context,
+        max_turns=100,
     )
     async for event in result.stream_events():
         ret = handler(event)
