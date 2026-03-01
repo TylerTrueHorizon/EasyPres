@@ -22,15 +22,60 @@ def _blend_toward_white(color, opacity=0.15):
     return RGBColor(new_r, new_g, new_b)
 
 
-def _pick_cols(n):
-    """Choose a sensible column count for n cards."""
-    if n <= 3:
-        return n
-    if n <= 8:
-        return 4
-    if n <= 10:
-        return 5
-    return min(n, 5)
+def _optimal_grid(n):
+    """Return (cols, rows) that minimizes max(cols, rows) for n cards.
+
+    Ties are broken by favouring more columns (landscape orientation).
+    """
+    best_cols, best_max = n, n
+    for c in range(1, n + 1):
+        r = ceil(n / c)
+        m = max(c, r)
+        if m < best_max or (m == best_max and c > best_cols):
+            best_cols, best_max = c, m
+    return best_cols, ceil(n / best_cols)
+
+
+def _estimate_wrapped_lines(text, font_pt, usable_width_inches, char_width_factor=0.45):
+    """Estimate how many wrapped lines a string occupies at a given font size."""
+    avg_char_width_inches = font_pt * char_width_factor / 72
+    if avg_char_width_inches <= 0:
+        return 1
+    chars_per_line = max(1, int(usable_width_inches / avg_char_width_inches))
+    return max(1, ceil(len(text) / chars_per_line))
+
+
+def _compute_card_font_size(cards, card_w_emu, card_h_emu):
+    """Find the largest value font size that fits all cards uniformly.
+
+    Returns (value_pt, label_pt).  Label size is kept at ~46% of value size
+    to preserve the original 11:24 ratio.
+    """
+    LABEL_RATIO = 0.46
+    MARGIN_IN = 0.15
+    usable_w = card_w_emu / 914400 - 2 * MARGIN_IN
+    usable_h = card_h_emu / 914400 - 2 * MARGIN_IN
+
+    max_val_pt = 48
+    min_val_pt = 10
+
+    for val_pt in range(max_val_pt, min_val_pt - 1, -1):
+        lab_pt = max(8, int(val_pt * LABEL_RATIO))
+        fits_all = True
+        for card in cards:
+            label_lines = _estimate_wrapped_lines(card["label"], lab_pt, usable_w)
+            value_lines = _estimate_wrapped_lines(card["value"], val_pt, usable_w, char_width_factor=0.62)
+            label_h = label_lines * (lab_pt * 1.3 / 72)
+            value_h = value_lines * (val_pt * 1.3 / 72)
+            space_before = 6 / 72
+            spacing = 6 / 72
+            if space_before + label_h + spacing + value_h > usable_h:
+                fits_all = False
+                break
+        if fits_all:
+            return val_pt, lab_pt
+
+    return min_val_pt, max(8, int(min_val_pt * LABEL_RATIO))
 
 
 def create_numeric_highlight_slide(
@@ -61,8 +106,9 @@ def create_numeric_highlight_slide(
         raise ValueError("cards list must not be empty")
 
     if cols is None:
-        cols = _pick_cols(n)
-    rows = ceil(n / cols)
+        cols, rows = _optimal_grid(n)
+    else:
+        rows = ceil(n / cols)
 
     slide_width = prs.slide_width
     slide_height = prs.slide_height
@@ -119,19 +165,23 @@ def create_numeric_highlight_slide(
 
     gap = Inches(0.2)
 
-    card_w = (available_width - (cols - 1) * gap) / cols
-    card_h = (available_height - (rows - 1) * gap) / rows
+    CARD_ASPECT = 5 / 3
 
-    max_card_w = Inches(2.5)
-    max_card_h = Inches(1.5)
-    card_w = min(card_w, max_card_w)
-    card_h = min(card_h, max_card_h)
+    w_from_width = (available_width - (cols - 1) * gap) / cols
+    h_from_height = (available_height - (rows - 1) * gap) / rows
+    w_from_height = h_from_height * CARD_ASPECT
+
+    card_w = min(w_from_width, w_from_height)
+    card_h = card_w / CARD_ASPECT
 
     total_grid_w = cols * card_w + (cols - 1) * gap
     total_grid_h = rows * card_h + (rows - 1) * gap
 
     x_offset = margin_x + (available_width - total_grid_w) // 2
     y_offset = grid_top + (available_height - total_grid_h) // 2
+
+    # ── Dynamic text sizing ─────────────────────────────────────────────
+    value_pt, label_pt = _compute_card_font_size(cards, card_w, card_h)
 
     # ── Cards ──────────────────────────────────────────────────────────
     card_fill = _blend_toward_white(theme['SECONDARY_COLOR'], opacity=0.15)
@@ -161,14 +211,14 @@ def create_numeric_highlight_slide(
         label_para.text = card["label"]
         label_para.alignment = PP_ALIGN.CENTER
         label_para.font.name = "Albert Sans"
-        label_para.font.size = Pt(11)
+        label_para.font.size = Pt(label_pt)
         label_para.font.color.rgb = theme['NEUTRAL_DARK']
 
         value_para = tf.add_paragraph()
         value_para.text = card["value"]
         value_para.alignment = PP_ALIGN.CENTER
         value_para.font.name = "Albert Sans"
-        value_para.font.size = Pt(24)
+        value_para.font.size = Pt(value_pt)
         value_para.font.bold = True
         value_para.font.color.rgb = theme['PRIMARY_COLOR']
 
@@ -183,8 +233,8 @@ if __name__ == "__main__":
         {"label": "Op. Cash Flow", "value": "$111.5 B"},
         {"label": "Share Repurchase", "value": "$90.7 B"},
         {"label": "Term Debt", "value": "$90.7 B"},
-        {"label": "R&D Exp", "value": "$34.6 B"},
-        {"label": "Cash & Securities", "value": "$132.4 B"}
+         {"label": "Share Repurchase", "value": "$90.7 B"},
+        {"label": "Term Debt", "value": "$90.7 B"}
 
     ]
 
@@ -197,7 +247,6 @@ if __name__ == "__main__":
             "via buybacks and dividends, and continued investment in R&D."
         ),
         cards=sample_cards,
-        cols=4,
     )
 
     tests_dir = os.path.join(os.path.dirname(__file__), "..", "tests")
