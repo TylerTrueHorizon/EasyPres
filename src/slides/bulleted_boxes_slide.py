@@ -5,7 +5,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
@@ -17,7 +17,7 @@ import math
 
 def _estimate_wrapped_lines(text, font_pt, usable_width_inches):
     """Estimate how many wrapped lines a string occupies at a given font size."""
-    avg_char_width_inches = font_pt * 0.45 / 72
+    avg_char_width_inches = font_pt * 0.52 / 72
     if avg_char_width_inches <= 0:
         return 1
     chars_per_line = max(1, int(usable_width_inches / avg_char_width_inches))
@@ -31,7 +31,7 @@ def _compute_bullet_font_size(cards, card_w_inches, card_h_inches,
     Returns an integer point size. Bullet size is capped at 80% of title_font_pt.
     """
     usable_w = card_w_inches - 2 * margin_lr_inches
-    usable_h = card_h_inches - 2 * margin_tb_inches
+    usable_h = (card_h_inches - 2 * margin_tb_inches) * 0.92
 
     max_bullet_pt = int(title_font_pt * 0.8)
     min_bullet_pt = 8
@@ -206,6 +206,7 @@ def create_bulleted_boxes_slide(
         ctf.margin_left = Inches(0.15)
         ctf.margin_right = Inches(0.15)
         ctf.margin_top = Inches(0.15)
+        ctf.margin_bottom = Inches(0.15)
 
         title_para = ctf.paragraphs[0]
         title_para.text = card["title"]
@@ -229,6 +230,9 @@ def create_bulleted_boxes_slide(
             pPr = bp._p.get_or_add_pPr()
             pPr.set('marL', str(hang))
             pPr.set('indent', str(-hang))
+
+        if n >= 5 or bullet_pt == 8:
+            ctf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
 
     return slide
 
