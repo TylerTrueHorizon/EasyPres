@@ -11,6 +11,7 @@ from pptx.chart.data import CategoryChartData
 from pptx.dml.color import RGBColor
 
 from intro_slide import DEFAULT_THEME
+from themes import font_family
 from numeric_highlight_slide import _blend_toward_white
 
 
@@ -66,7 +67,7 @@ def create_bar_chart_slide(
     tf.text = title
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.CENTER
-    p.font.name = "Albert Sans"
+    p.font.name = font_family(theme)
     p.font.size = Pt(28)
     p.font.bold = True
     p.font.color.rgb = theme['PRIMARY_COLOR']
@@ -85,7 +86,7 @@ def create_bar_chart_slide(
         df.text = descriptor
         dp = df.paragraphs[0]
         dp.alignment = PP_ALIGN.CENTER
-        dp.font.name = "Albert Sans"
+        dp.font.name = font_family(theme)
         dp.font.size = Pt(12)
         dp.font.color.rgb = theme['NEUTRAL_DARK']
         content_top = content_top + desc_height + Inches(0.05)
@@ -124,7 +125,7 @@ def create_bar_chart_slide(
         chart.has_legend = True
         legend = chart.legend
         legend.include_in_layout = False
-        legend.font.name = "Albert Sans"
+        legend.font.name = font_family(theme)
         legend.font.size = Pt(10)
         legend.font.color.rgb = theme['NEUTRAL_DARK']
     else:
@@ -139,7 +140,7 @@ def create_bar_chart_slide(
     data_labels.show_value = True
     data_labels.show_category_name = False
     data_labels.show_series_name = False
-    data_labels.font.name = "Albert Sans"
+    data_labels.font.name = font_family(theme)
     data_labels.font.size = Pt(10)
     data_labels.font.color.rgb = theme['NEUTRAL_DARK']
     if horizontal:
@@ -169,7 +170,7 @@ def create_bar_chart_slide(
     category_axis = chart.category_axis
     category_axis.visible = True
     category_axis.has_major_gridlines = False
-    category_axis.tick_labels.font.name = "Albert Sans"
+    category_axis.tick_labels.font.name = font_family(theme)
     category_axis.tick_labels.font.size = Pt(11)
     category_axis.tick_labels.font.color.rgb = theme['NEUTRAL_DARK']
     category_axis.format.line.fill.background()
@@ -178,7 +179,7 @@ def create_bar_chart_slide(
     value_axis.visible = True
     value_axis.has_major_gridlines = True
     value_axis.major_gridlines.format.line.color.rgb = theme['NEUTRAL_LIGHT']
-    value_axis.tick_labels.font.name = "Albert Sans"
+    value_axis.tick_labels.font.name = font_family(theme)
     value_axis.tick_labels.font.size = Pt(9)
     value_axis.tick_labels.font.color.rgb = theme['NEUTRAL_DARK']
     value_axis.tick_labels.number_format = '#,##0'

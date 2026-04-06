@@ -4,19 +4,9 @@ from pptx.enum.text import PP_ALIGN
 import os
 from pptx.dml.color import RGBColor
 
-# Default TrueHorizon AI Color Palette
-DEFAULT_THEME = {
-    # Primary brand color - Deep Blue (for titles and key elements)
-    'PRIMARY_COLOR': RGBColor(0, 51, 102),  # #003366
-    # Secondary brand color - Bright Cyan (for accents and highlights)
-    'SECONDARY_COLOR': RGBColor(0, 174, 239),  # #00AEEF
-    # Tertiary color - Warm Orange (for call-to-action and emphasis)
-    'TERTIARY_COLOR': RGBColor(255, 127, 0),  # #FF7F00
-    # Neutral Dark - Charcoal (for body text and subtitles)
-    'NEUTRAL_DARK': RGBColor(51, 51, 51),  # #333333
-    # Neutral Light - Light Gray (for backgrounds and secondary text)
-    'NEUTRAL_LIGHT': RGBColor(242, 242, 242)  # #F2F2F2
-}
+from themes import default_theme, font_family
+
+DEFAULT_THEME = default_theme()
 
 
 
@@ -53,24 +43,28 @@ def create_intro_slide(prs, title, subtitle, date, theme=DEFAULT_THEME):
     # Add title
     title_box = slide.shapes.add_textbox(title_left, title_top, title_width, title_height)
     title_frame = title_box.text_frame
+    title_frame.word_wrap = True
     MAX_TITLE_CHARS = 30
     if len(title) > MAX_TITLE_CHARS:
         title = title[:MAX_TITLE_CHARS - 3].rstrip() + "..."
     title_frame.text = title
     title_para = title_frame.paragraphs[0]
     title_para.alignment = PP_ALIGN.CENTER
-    title_para.font.name = "Albert Sans"
+    font = font_family(theme)
+    title_color = theme.get("TITLE_TEXT_COLOR", theme["PRIMARY_COLOR"])
+    title_para.font.name = font
     title_para.font.size = Pt(44)
     title_para.font.bold = True
-    title_para.font.color.rgb = theme['PRIMARY_COLOR']  # Deep Blue for main title
+    title_para.font.color.rgb = title_color
     
     # Add subtitle
     subtitle_box = slide.shapes.add_textbox(Inches(1), subtitle_top, Inches(8), Inches(1))
     subtitle_frame = subtitle_box.text_frame
+    subtitle_frame.word_wrap = True
     subtitle_frame.text = subtitle
     subtitle_para = subtitle_frame.paragraphs[0]
     subtitle_para.alignment = PP_ALIGN.CENTER
-    subtitle_para.font.name = "Albert Sans"
+    subtitle_para.font.name = font
     subtitle_para.font.size = Pt(28)
     subtitle_para.font.italic = True
     subtitle_para.font.color.rgb = theme['SECONDARY_COLOR']  # Bright Cyan for subtitle
@@ -92,10 +86,11 @@ def create_intro_slide(prs, title, subtitle, date, theme=DEFAULT_THEME):
     # Add date as footer in bottom right
     date_box = slide.shapes.add_textbox(Inches(7.5), Inches(7), Inches(2), Inches(0.5))
     date_frame = date_box.text_frame
+    date_frame.word_wrap = True
     date_frame.text = date
     date_para = date_frame.paragraphs[0]
     date_para.alignment = PP_ALIGN.RIGHT
-    date_para.font.name = "Albert Sans"
+    date_para.font.name = font
     date_para.font.size = Pt(14)
     date_para.font.color.rgb = theme['NEUTRAL_DARK']  # Charcoal for date
     

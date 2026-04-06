@@ -9,6 +9,7 @@ from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
 from pptx.dml.color import RGBColor
 
 from intro_slide import DEFAULT_THEME
+from themes import font_family
 from numeric_highlight_slide import _blend_toward_white
 
 import math
@@ -90,7 +91,7 @@ def create_table_slide(
     tf.text = title
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.LEFT
-    p.font.name = "Albert Sans"
+    p.font.name = font_family(theme)
     p.font.size = Pt(28)
     p.font.bold = True
     p.font.color.rgb = theme['PRIMARY_COLOR']
@@ -107,7 +108,7 @@ def create_table_slide(
     df.text = descriptor
     dp = df.paragraphs[0]
     dp.alignment = PP_ALIGN.LEFT
-    dp.font.name = "Albert Sans"
+    dp.font.name = font_family(theme)
     dp.font.size = Pt(12)
     dp.font.color.rgb = theme['NEUTRAL_DARK']
 
@@ -166,7 +167,12 @@ def create_table_slide(
     for i, rh in enumerate(per_row_heights):
         table.rows[i].height = Inches(rh)
 
-    header_fill = _blend_toward_white(theme['SECONDARY_COLOR'], opacity=0.35)
+    if theme.get("TABLE_HEADER_BG") is not None:
+        header_fill = theme["TABLE_HEADER_BG"]
+        header_text_rgb = theme.get("TABLE_HEADER_TEXT", theme["NEUTRAL_DARK"])
+    else:
+        header_fill = _blend_toward_white(theme['SECONDARY_COLOR'], opacity=0.35)
+        header_text_rgb = theme['NEUTRAL_DARK']
     data_fill = _blend_toward_white(theme['SECONDARY_COLOR'], opacity=0.10)
 
     # ── Header row ─────────────────────────────────────────────────────
@@ -179,10 +185,10 @@ def create_table_slide(
 
         p = cell.text_frame.paragraphs[0]
         p.alignment = PP_ALIGN.CENTER
-        p.font.name = "Albert Sans"
+        p.font.name = font_family(theme)
         p.font.size = Pt(header_font_pt)
         p.font.bold = True
-        p.font.color.rgb = theme['NEUTRAL_DARK']
+        p.font.color.rgb = header_text_rgb
 
     # ── Data rows ──────────────────────────────────────────────────────
     for row_idx, row_data in enumerate(rows):
@@ -195,7 +201,7 @@ def create_table_slide(
 
             p = cell.text_frame.paragraphs[0]
             p.alignment = PP_ALIGN.CENTER
-            p.font.name = "Albert Sans"
+            p.font.name = font_family(theme)
             p.font.size = Pt(data_font_pt)
             p.font.color.rgb = theme['NEUTRAL_DARK']
 

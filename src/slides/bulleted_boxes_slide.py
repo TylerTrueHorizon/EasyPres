@@ -10,6 +10,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
 from intro_slide import DEFAULT_THEME
+from themes import font_family
 from numeric_highlight_slide import _blend_toward_white
 
 import math
@@ -115,7 +116,7 @@ def create_bulleted_boxes_slide(
     tf.text = title
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.CENTER
-    p.font.name = "Albert Sans"
+    p.font.name = font_family(theme)
     p.font.size = Pt(slide_title_pt)
     p.font.bold = True
     p.font.color.rgb = theme['PRIMARY_COLOR']
@@ -176,7 +177,7 @@ def create_bulleted_boxes_slide(
         ntf.text = str(idx + 1)
         np = ntf.paragraphs[0]
         np.alignment = PP_ALIGN.CENTER
-        np.font.name = "Albert Sans"
+        np.font.name = font_family(theme)
         np.font.size = Pt(number_font_pt)
         np.font.bold = True
         np.font.color.rgb = theme['NEUTRAL_DARK']
@@ -211,7 +212,7 @@ def create_bulleted_boxes_slide(
         title_para = ctf.paragraphs[0]
         title_para.text = card["title"]
         title_para.alignment = PP_ALIGN.LEFT
-        title_para.font.name = "Albert Sans"
+        title_para.font.name = font_family(theme)
         title_para.font.size = Pt(card_title_pt)
         title_para.font.bold = True
         title_para.font.color.rgb = theme['NEUTRAL_DARK']
@@ -221,7 +222,7 @@ def create_bulleted_boxes_slide(
             bp = ctf.add_paragraph()
             bp.text = "\u2022  " + bullet_text
             bp.alignment = PP_ALIGN.LEFT
-            bp.font.name = "Albert Sans"
+            bp.font.name = font_family(theme)
             bp.font.size = Pt(bullet_pt)
             bp.font.color.rgb = theme['NEUTRAL_DARK']
             bp.space_before = Pt(6)

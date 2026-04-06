@@ -11,6 +11,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
 from intro_slide import DEFAULT_THEME
+from themes import font_family
 
 
 def _blend_toward_white(color, opacity=0.15):
@@ -131,7 +132,7 @@ def create_numeric_highlight_slide(
     tf.text = title
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.CENTER
-    p.font.name = "Albert Sans"
+    p.font.name = font_family(theme)
     p.font.size = Pt(32)
     p.font.bold = True
     p.font.color.rgb = theme['PRIMARY_COLOR']
@@ -150,7 +151,7 @@ def create_numeric_highlight_slide(
     sf.text = subtitle
     sp = sf.paragraphs[0]
     sp.alignment = PP_ALIGN.CENTER
-    sp.font.name = "Albert Sans"
+    sp.font.name = font_family(theme)
     sp.font.size = Pt(14)
     sp.font.color.rgb = theme['NEUTRAL_DARK']
 
@@ -210,14 +211,14 @@ def create_numeric_highlight_slide(
         label_para = tf.paragraphs[0]
         label_para.text = card["label"]
         label_para.alignment = PP_ALIGN.CENTER
-        label_para.font.name = "Albert Sans"
+        label_para.font.name = font_family(theme)
         label_para.font.size = Pt(label_pt)
         label_para.font.color.rgb = theme['NEUTRAL_DARK']
 
         value_para = tf.add_paragraph()
         value_para.text = card["value"]
         value_para.alignment = PP_ALIGN.CENTER
-        value_para.font.name = "Albert Sans"
+        value_para.font.name = font_family(theme)
         value_para.font.size = Pt(value_pt)
         value_para.font.bold = True
         value_para.font.color.rgb = theme['PRIMARY_COLOR']

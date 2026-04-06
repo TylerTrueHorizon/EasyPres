@@ -18,6 +18,9 @@ app = FastAPI(title="EasyPres API")
 class GenerateRequest(BaseModel):
     content: str
     num_slides: Optional[int] = None
+    include_sources_cited: Optional[bool] = None
+    theme_name: Optional[str] = "default"
+    theme_overrides: Optional[dict[str, Any]] = None
     webhook_url: Optional[str] = None
     webhook_headers: Optional[dict[str, str]] = None
     passthrough_data: Optional[dict[str, Any]] = None
@@ -39,6 +42,9 @@ async def generate(req: GenerateRequest):
             content=req.content,
             output_path=tmp_path,
             num_slides=req.num_slides,
+            include_sources_cited=req.include_sources_cited,
+            theme_name=req.theme_name or "default",
+            theme_overrides=req.theme_overrides,
             webhook_url=req.webhook_url,
             webhook_headers=req.webhook_headers,
             passthrough_data=req.passthrough_data,

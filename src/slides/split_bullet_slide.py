@@ -10,6 +10,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.dml.color import RGBColor
 
 from intro_slide import DEFAULT_THEME
+from themes import font_family
 from numeric_highlight_slide import _blend_toward_white
 
 
@@ -60,7 +61,7 @@ def create_split_bullet_slide(
     tf.text = title
     p = tf.paragraphs[0]
     p.alignment = PP_ALIGN.LEFT
-    p.font.name = "Albert Sans"
+    p.font.name = font_family(theme)
     p.font.size = Pt(32)
     p.font.bold = True
     p.font.color.rgb = theme['PRIMARY_COLOR']
@@ -76,7 +77,7 @@ def create_split_bullet_slide(
     sf.text = subtitle
     sp = sf.paragraphs[0]
     sp.alignment = PP_ALIGN.LEFT
-    sp.font.name = "Albert Sans"
+    sp.font.name = font_family(theme)
     sp.font.size = Pt(13)
     sp.font.color.rgb = theme['NEUTRAL_DARK']
 
@@ -133,7 +134,7 @@ def create_split_bullet_slide(
         title_para = tf.paragraphs[0]
         title_para.text = sec["title"]
         title_para.alignment = PP_ALIGN.LEFT
-        title_para.font.name = "Albert Sans"
+        title_para.font.name = font_family(theme)
         title_para.font.size = Pt(15)
         title_para.font.bold = True
         title_para.font.color.rgb = theme['NEUTRAL_DARK']
@@ -141,7 +142,7 @@ def create_split_bullet_slide(
         desc_para = tf.add_paragraph()
         desc_para.text = sec["descriptor"]
         desc_para.alignment = PP_ALIGN.LEFT
-        desc_para.font.name = "Albert Sans"
+        desc_para.font.name = font_family(theme)
         desc_para.font.size = Pt(11)
         desc_para.font.color.rgb = desc_color
         desc_para.space_before = Pt(4)
